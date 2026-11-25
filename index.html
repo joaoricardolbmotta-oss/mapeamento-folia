@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mapeamento Grupo Folia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: light;
+    --roxo: #52229B;
+    --roxo-escuro: #3E1877;
+    --roxo-claro: #EFE8FA;
+    --lavanda: #F6F2FC;
+    --borda: #E2D8F3;
+    --texto: #1F1630;
+    --suave: #6B6080;
+    --erro: #B42318;
+    --branco: #FFFFFF;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--lavanda);
+    color: var(--texto);
+    font: 16px/1.5 Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 560px; margin: 0 auto; padding: 20px 16px 48px; }
+  .logos { display: flex; justify-content: center; align-items: center; gap: 22px; margin: 4px 0 18px; }
+  .logos img { height: 30px; width: auto; opacity: .5; }
+  .logos img.wide { height: 22px; }
+  .progress { height: 4px; background: var(--borda); border-radius: 99px; overflow: hidden; margin-bottom: 8px; }
+  .progress > div { height: 100%; width: 0; background: var(--roxo); border-radius: 99px; transition: width .3s ease; }
+  .step-label { font-size: 13px; color: var(--suave); margin: 0 0 12px; min-height: 20px; }
+  .card {
+    background: var(--branco); border: 1px solid var(--borda); border-radius: 14px;
+    box-shadow: 0 1px 2px rgba(82, 34, 155, .05); padding: 24px 20px;
+  }
+  h1, h2 { font-family: "Bricolage Grotesque", Inter, sans-serif; color: var(--roxo); margin: 0 0 10px; line-height: 1.2; }
+  h1 { font-size: 26px; }
+  h2 { font-size: 22px; }
+  p.lead { margin: 0 0 18px; color: var(--texto); }
+  .field { margin: 20px 0 0; }
+  .field:first-of-type { margin-top: 6px; }
+  label.q, .q { display: block; font-weight: 600; margin-bottom: 4px; }
+  .hint { font-size: 13px; color: var(--suave); margin: 0 0 8px; }
+  .req { color: var(--roxo); }
+  .multi { font-weight: 400; font-size: 14px; color: var(--suave); }
+  input[type=text], textarea {
+    width: 100%; font: inherit; color: var(--texto); background: var(--branco);
+    border: 1px solid var(--borda); border-radius: 10px; padding: 11px 12px;
+    outline: none; transition: border-color .15s, box-shadow .15s;
+  }
+  textarea { min-height: 96px; resize: vertical; }
+  input[type=text]:focus, textarea:focus { border-color: var(--roxo); box-shadow: 0 0 0 3px rgba(82, 34, 155, .14); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    font: inherit; font-size: 15px; color: var(--texto); background: var(--branco);
+    border: 1px solid var(--borda); border-radius: 99px; padding: 8px 14px;
+    cursor: pointer; transition: background .15s, border-color .15s, color .15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .chip:hover { border-color: #C9B7E8; }
+  .chip[aria-pressed=true], .chip[aria-checked=true] {
+    background: var(--roxo-claro); border-color: var(--roxo); color: var(--roxo-escuro); font-weight: 600;
+  }
+  .chip:focus-visible { outline: 2px solid var(--roxo); outline-offset: 2px; }
+  .error { color: var(--erro); font-size: 14px; margin: 8px 0 0; min-height: 0; }
+  .error:empty { display: none; }
+  .nav { display: flex; gap: 10px; margin-top: 24px; }
+  .btn {
+    font: inherit; font-weight: 600; border-radius: 10px; padding: 12px 18px;
+    cursor: pointer; border: 1px solid var(--roxo); transition: background .15s, opacity .15s;
+  }
+  .btn-primary { background: var(--roxo); color: var(--branco); flex: 1; }
+  .btn-primary:hover { background: var(--roxo-escuro); }
+  .btn-ghost { background: transparent; color: var(--roxo); }
+  .btn[disabled] { opacity: .6; cursor: default; }
+  .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  .done { text-align: center; padding: 34px 20px; }
+  .done .check {
+    width: 52px; height: 52px; border-radius: 50%; background: var(--roxo-claro); color: var(--roxo);
+    display: grid; place-items: center; margin: 0 auto 14px; font-size: 26px;
+  }
+  [hidden] { display: none !important; }
+  @media (max-width: 380px) { .card { padding: 20px 16px; } h1 { font-size: 23px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logos" aria-label="Folia Entretenimento, Folia Formaturas e E-Music">
+    <img alt="Folia Entretenimento" src="data:image/png;base64,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">
+    <img alt="Folia Formaturas" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFEAAAA8CAYAAAAe5VayAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAUaADAAQAAAABAAAAPAAAAADqhB1AAAAIOklEQVR4Ae2aecwdUxiHW1s3S6l9/VpLa6mdWKq1U0QtrQoigighEluKCEWDBImI+MOSCFG1JNYQS1JVTTVN0YqtC22DfFV7aS21PA/3yPT23plz594ZdfP9kqd3Zs573nPOO2fO9rV7t27dhkFR6o7jn2Em/JZRyJqkD4Dd4WDYAzpgQ1gL1C/wJcyDGfAmzIEv4D/VH5ReFH/ieyFsktJCA3c1TIUlYJ5Yfsd2ATwNZ0Bf+E8UW+G8dvWCuAGtvRk6Ia/v6nzv4msklK7qirT6vlYQO2jlJGh1WfpbAbfDOlCaimhI0md1EP2034KkTRHXt1FG97KiWEQDkj6rg3hvCQG0fCey4e0YxL1o1I+QDHKR129QVuGf9RolvKlkIxz0+5RQZihify72CTdF/Yb1V5Z/B+sHwCVII+OMtt/BMnAdeBiUqR4UNgSmFVloI0G8g4rMb6Iym5HXNWGWvsLA2dVFeq0XFsa7EaQfA1naNcug2fTYINqYTcEGNjoEOAY6yG8MPSFLX2NwF/yaYthB2pUp6cmkLbix/ga/EMUG0XHtSXDbVat3pFXOnYRLGgPoJ50lX5KfYVoQx5Me06stq7f/FKnYIBq4rXJWpFcln1u0mN6gjbZpepnE0RBT/yxfaeVEpcVUIspRHSMDEgL3A9d+1lmyTh3wE9Tq9fqbDK/AcZClbzAIdciyzZVedBCTlVrMjQ3aKPmwxvW2PJsEaQ33wCT08BouVnr0yUp3BdyUGUR71tuwQ0Y7rJOTWKvkMVyhanSmbbQyfo7JyeSFRh00ad9J/ilN+sjMHtsTXWw/Do0ucfwkFyVqYRA/gkGJZ0VeTsT5Z0UWEHzb0CyWY7N9yNDk72nk96Vkldls+lzK2LrJukZnj6msQdwt2mO24ThMYsrNa+OfEIZmV6N1FjEVbXUQrf1l4O4kpvxGbN7D54FQqmIr6B+QWi2PxiaAhxSx9ahn51JmHLi9LFXOnk4YWXIMuwaSk0RWnkbSB2J8PBwCTjqOZT3Bmb16we0aUb6HhTAbXoXXwM+4dFVXsPQK1CjQP2D1gy3AXrUeuHc3cL+AwVsCn1euXX926f8egTw9cX0a3Tei4d9iszTCrtrEnufW0LGvnqy346i9Mkue4uQdJy3HSbXlw8TlOLUBWYzBJo/OJ1OWb9Mdo2M0HqMYf/VsZpHfv1DW1Vp1U+onOOA7bmXJM8E8Ml+M/5gDCL+aUyP91aurq5Jh8FQ9gzx757TPLFlOrF0yj9ex+WLshuDPmb9ZjU5zkCeIaf5Wt7RRVCjPuF/djqE8GFD9MNy3cxC3pJHHhIY2+evR3PB6Pto5iMfSaNearZK9eu1azto1iO50nFBaqf1wVnPr265B3JEGu4VspVxvjqjlsF2DeBKNddEeo4kYuYWM0YkYrVtt2I5BdJ1Zs8dUN557F9jXwesQo10wOqDasB2DuDeNlBhNw2g+PBtjjI0Ty8hq23YMorOopz4xCruQyRgviMmAjbP+ZknbIoPo0VXZcrt4XGShn2H3fMXWA4YXIvNth92hSds8e+dk/rTrMSQeBVkvynQPhh+BZjUMBztFOrHtt4I7Gl/4QIiV28B/D7OLDOJgCpIYzY4xirBpZJu3Of7Oi/BZy8Tl0w4wz8SsXqJNGVrRgkLc5tnzy5Dnk/9uA1eXILai4Y6FKw34rXCa4sNZ2tl6temJKXWNSipim5dV8L4Y/L0NbJee6GTi2WGZ6k1h7oyi/pNkmRXLW9bJZFxlO1bH2S08n1Inzcd94E5wKZMlt4G35Zmdi+i9fo5Bsf6DnT3CWTlGCzC6HdzupckTm7FpBpU0P+ej8wRxMRn9n12tmFGti3Xo9KKir/nN8u+OJOQZUMn3Pr9pfzJwEngAsgKou4fgcPAFpfn0RZ6S5+jcXpMn+GSrq99JCS8lxr/19r8um8/ghF7JZV2Z5+e6qasmxPpNfkWreul60hWBrgh0RaArAl0RaDQCeWaWfhTi6YyLURe4LkmS2pObncH/bJScDZ3Rfb4j9IJkvh7cu1Rx+eGSwnPBzUEfSVn2hrA08bAv13uAhwL9wTKXgdK+J/jMX/fWIa+ztWUOgo3gS6iWf3K1rsFfSNfXAbAJfJsniOeT8QxYD3T2HigrdRWcAFZWm3cgrMus0H1gpUbBcpgDanuYBDNgIdwJZ8JjkJTPzwFPpMOSaBuuR8OV4G7jU+gEZV09J5wJu4L1ex6UL+5esF5Hgp1iOgT50h+GIfBceMivz8eDwd8H1o9ZX2G3klw/ef73ElioPUftDPvDGLgW/N+rF0KQhS+Cm2AyDIMgfdoTToItYS/4CXwxQf25sKz3wfO8oLlcjIOP4UZ4F4IsM3QUfblID/K5L9IdzP2QrA+3f7dlPr/24sE+qMiYDQDbcg9MtJBGZUPsyn7KH4KNUH5O9rrfvEELwLcYZM8x0BOgF1wMQdZjCuj7avAFbQvJII7kfgnYe92zvgpBvgSD4m9S5ndBrkK9/rn757lDg4GwN18REiq/fi2+GNs5AsLB8a9cXwpng1/GDKPaqMzzCIyFhyBoFheOZceCb+p0SDbUQNmLboAf4EdIyiP6N2AovAg9IagPF0eAgT0I9obtIKlkwMPzD7jw6+gP1usTCDLo38B1MA+WQZBfw37gWLsTWKe+oKyXneNReBjOMiCNajEZltbI9D3PrgeDa/B8i09AkG9wERjI12A4BC3nohOmwt2Va23tmaoDpsO5cAlMhD0h6A8uDNCK8KDyaz2+gMlgw+11QeZZCJ/Dg2BvCxrExTNwEVwA02AgKMtwHNXn5TD6LyyW9QqBH6uTAAAAAElFTkSuQmCC">
+    <img alt="E-Music" class="wide" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALgAAAA8CAYAAADVEnAJAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAuKADAAQAAAABAAAAPAAAAABCWwV7AAAPUUlEQVR4Ae2bB7BdRRmADRFCCDVSQhESCKFKiUhHkgATI10ERhgRQokI2CDOqKAUC9ITigUDgdEB0dDbUAKEFlqoASQCIYEQWiK9o9/3fOucWc4595z77ivA/jPfO2d3/y3n33//3XPfvb0+1/WyKF0OhnVhEAyDTaAfKHPg9na8vwfmwjuQJFmglgV61dJuXvkLVP0qbANbwMrQH6rIsyg9AzfCdXAvvAtJkgW63QKrMIJfwnT4CP7TQd6i/hQYDUtAkmSBbrHAivR6LHjE6KhTF9V/gLb3h0UgSbJAl1jAI8/u8AQUOWar86+nr6GQJFmgUy2wGK2Phw+g1U7cqL159DkGkiQLdIoFhtCqL4CNHLEzyz+k/xPBhZYkWaBlFliHlnyJ7EznrdP2JYxlyZY9XWroM20BI3dPcu6wEC5iXH0/0zOTHr7DFlieFu6D4FQ97er7wAIdfsrUwCfaAr2bHP1C1DsNRjVZP1R7g5sZcBc8CI/Bc7Ag2IfXZsX/js4H206SLFDLAgej3WzEfoW6F8K+4BFnKYjF3WF9GAs3wXvQTH8vUW9DSJIsUNkCa6Hpd0PqOtyr1DkL1oM6sjDKI+FaqNun+jdDH0jScy3gUbKrvjZSagWPNH+Fuo42jTqbl7bcuPDzqHwHmllcBzZuPml0gwXcvU8Bj6YPgTt2twajzRjA61DHwS9Af2lolWxEQxqkzhj8pKeVY2jVs3yW2zFYngTxPHr87RZxCzkX4gGVpXXuzviuyNq0+3jNsYxBP0nPsUB/hpL3EfNk8jvy4ULTT6hT+alEmUNny/x66+JN99a4oi+hfpU222fZ/R3o9mvcbNLoIgvo4I9CPGf6Tbc4+JE5g4kHF9Jz0PUHDZ0te9HB+xD6Lbv6HZmtOntAqf3KFvDF8jcQz9mhlVtooaKfZEzNGUw8uJA+qoV9lzXli+flNcY1rqyxVNblFvD4ehw8CY/Aj6BborfHgaovl0+g25UvdMPoz5+zhcVVdvWfPn0hSc+ygMeVTvmSnBGwiqyJUtXz60R0X67SaIt0ptDO7TCiQns+hz+f8+xeVTT8arAG+Obvz+d8wfUfVq0WPzbz/wyrgovWqGZ/b0ORDKDA9yN/ZPIqWGc2eHTLkz5kxlHSX1vZh8EhFo8SBoX4c2r/+SaxaF/tNRDc+X1vexq0+WtgX4rthXZ9VmVRcNxlP0lchnJttDJY75/wFLwJTcvJ1CyLjKFMAxvtu1oOpMMwhrKrxtux4uA2Qm88zII3ILSr8eeCRyPb0uk7KsNo4C/wPDhpoS/t6UeiHvlWgKzsSsIxvAg+V6gzj/t74Qegs8XiVyyei7iVtM6VJ18kcwbEdY7IKLsIdoaLQduExRLGpGP7bNeB9VyQ/eEGiNv9LXmxGIhHwSR4AVxYoW1PFjNhHGwATck51AoNll3vQs9zVVfLEDp8BcrGFsp+2mBwTrRGzjp1qBtffXG9BFaBZkRbOTHZCYv7CGkj1ddBp/0zGAlDWdH1fnSGQ1bOJxHr68CLZZUy9wO5jx3W+se167izVx1P6Fen3goegJAXrn8gLysu7H/AhxB0iq7z0fk1VD1toPo/5alcixrN5p/eVqPr/yxFl05SdixF90eXDE+Hu7BiO9n276GOka6OLIzy2ZBtp9G90fm+mnVeRn9rCDKRm7ifx8krc/C8xX40dZTjIW6vUfpO6iwND+bU9escQVbiRts2ai8ud8EtaCNuLY1kIRR0oA/ASFOE5XXOtqi3TFy5D1dsbUCJntvnngXlPrfHEyNnLBuRMR7cSqvKGBQPqKrcruc8DK1Zx4g/DpaoWa+RuhHVY8beBYr6g/YSHTArBpHXIT7XZ3UMAEZzbVtXRlNhXyuFCdmY+82gD8SD6UveW/A0lImLxXaOgSoLp6wty2bBJDBqZWUHEvYTG2etrFLJfdFEr02dw3PqOVFGWrdJnXxZOAyGQVZ2IiEXZzML7n1ROqSgTIe4Doy8zsmaUCbOzY3wCmwKefrrk78v6OitEv1kDdAeWTH/KjgdPNo4TwaVETAcXBQ+X1uE5Voku1AwKqfQAHMZXAkGX/VGQlbs88dwuZl2qjEdWBk23Igq7ZT1EZddS59GoCA6dt55MK5Xlr4gNBZdf0U6r95RkZ5JjzLXQKzvxPYGDbwqrJdBJzNP+TZoy7j+M+RtDUFcjCeB0TLWNf00uAiCGOF/D3m6k9uVJuaUP05e3SPKkdTZEt6P2jMgFO1MS1LmeHVux/oQxGM9kzzleojLbPsnFmZkAe5PhFjX9Bj15hQUhgo+gFEipMuuM9HrqAPG7esMQVytcXnddJ6Da/Cbctp24pcHd7F+GYwcRo13INv/s6RXAOvorG+AW7F4Pxt08lMhW897nXhfiGVRMqZBrO9uslusTNqx3gex/gvkrQTn5JQ14+C/oB0ddmZOe2+Sdx7sCMtAnhQ5+DiUB8F8iJ/hFvJ8vljcFSbAZXBpO96P9YiiAcskGL9MJ5QtzY0LwvNTq8RoGcSo11HpldPAKuR5RIlFZ3U7zaujk8fb7ADyvgQzQFtkx06yTd8Jd7HEYqC5Ms4k7cK4GjaMyl4lPSXKM2mAuRuGmsiIjrE4OJ+tECPnv+FkOA1MB/G59wGD00wwGutw2tIoXCbOsXZ08cRyIxk+XyzzyNgf4nnq5aAmxdpR2kmMJypS+X/SDoxqrZRWTUgY07vhJnPV4fIW5WLkrwvr5LA6edlJJdl2PClzIp9FGxlYYnHi3CnzxGiWJ3H/QWduuMlc7buVtgzOdDrtjgV3qVjUGQQHgYv3GtgcGklR0L23QcXwjOH6kQa6o0Eli91y3EIbiQvBxhut0kbtdGb5kwWNhwnLFrsbGSmr8hq6LhYXUZ4z2YeOnNeXeXn5ZH9sIZlXJkXtFNUp67to18z2cQoNbwcXgjtOnqi/Lbgb7QxlgbDIf4ocn+byxUjyNGj0vLNNqFU1gqvvIJxoz0WtlqKIVbUfx+VWGcuLZLwERuys3Epi7/aM7ISa5YJ/r70sXNRx4uRbMBiCg/Tm/il4GDr6HDTRlOQtOhsaAIPgQROR+Ax9ojyT2jIrd5Hwmd3ZRsBw2BpsOytLkPBYsz0UBU0Dap7Y5kV5BeTpd+7C2WfsrYNPg9kwBIrESg7GSWokLgYH6CTnbfuN6peVe07VqRYqUyopO46yvEl8gfyHYNWo7gakl4O8OsuQb9TSqRWvOvNkMGBcAUUS6hSVd0Z+6HNWTuMeqw6CQ6Iy/eMw8BrLc+0ZzrFzHcT3D/kjrAJHwgGQldVIfBncIWOxL+vPhIGQlVEkXECWZ2VFEu4eLqYQUHzeu6Ft8EY1nbiMqp+k2IYTPBfsrKzNKmUaPoiDPhE0TJW66jiG6bAPhEnm9mNyIDl5bU4lf41Iez3St7Tr2354Tg2v4zeS81GI+7Juv4KKY3P0XyLPxZcnR5MZt2/EXRdctAaJuNxjwRkwBJaF9cFxGthiXed2JXBh6DsnwcaQN/5tyY/rm94LjPpx2VnkKedAXGZ6MqwNQQZz4/k+T3c/V4sPNgV2gjIxaqprnUayMAo6k+exeNtvVLes3Idwsn0go4COVSYLUPg8+HxvlilSNgl+CFnjWWUTuAmuByOVb/cjwa1WyS6aCaR1vJ4qCzIwdyp3l29Eg3R3PgRGg07tfEuenEfms+BiGQ76zvfhX3AvvAKzYCDk+ZXzpi2dnyI5k4JdQXtnxf7ugBvBNrYFF2Qs08hw8bXJUP66wvNWQcjzod9qoBN0w9UHfbFmnVA3XA+iflfJ9nRU9xnDOK+l7iIVB3o+eqFeuHZFBHeeFSO5Cz/0Xec6nXorgLI/1KkbdO+k3gB4MKd+iOAUfe7nOeWhjbKrL/m72EBYQY9yf78ZJaJuL3i/RCcu6k+GEf9VMPr3dLmKARrFdPI6cg3K+0HdenX6aKXuIzQ2GubVbNQIvTfMAX3B3a2uuMONBQOqbZTJCRSeWqaQU2YgPhwutSw4uKH+EjMaiFucDbh6qspSKLrVeW7T0RsdK1DpVjmX3r8JboM+a5nMpvAo2B2MiFVFO8YSjnVxvuk8/T55iu152jsW2w/zbZmL8mtwNRjxysSj5t9A/QfaFXXOmfAkNKqPSltgvJnrbnAbOJ68Z8iO3WB6BBwMT0GZ6FdTYQ84IyhmV9DKZN4Dy4bCgquRWAfPM3pBlbZsncVVqzHcysXoXiY+oA83oUypk8r60e4I2AY857lQFYPBLeALks6hk9cVX7A2hrDYnQej6e/AF8BY7H8HyOq/Sfp40PliGUXGSAj6lmtLJz4er3OwBWwHW8FgCPIwN7eBxy/PtNn2SLaJ/rIObAmDwOcKtuK2bQFM4arNbOttUJz/Q2F5CAHTBXg7/B1iUc9nGtZO8D+PwZPB9q8D7VIop1FiZ41wkn3YRnp55Tr6fAgvIk7oC6DhxYnWCDPhddgPuluMNou207e7B9OJ/ffOPKfP26uJvozKwVZeXUCtFhdH6MP+KosrUWfLc8w47y30QjSPy6qmjSq2MReCg+v4Lh7LbOe7kCRZoCkLuCVkZTqJidmMkntXu87ZEXF1285ysFI7vpgaOcLK18mTJAs0ZYHYwW1kPDxToTVfBmptDxXaTCrJAi21QJ6DP0cPJ0CdyFlHt6UPkBpLFiizQJ6Dq3825L3JFrWlg/tCmBy9yEIpv1ssUOTgvuD9DJ6oOCrb8c3WM7l1kyQL9AgLFDm4g3sS/JC9qsP6suiLoVHcjxFTNMcISbrXAmUO7siugEOhqpP76Ycvn2I0l+ToGCFJ91igkYM7qj/BsTWHZ7v+p0mH18mzn5mTTJIs0DUW8FhRRaaitDhsWkU5o6Oj24f4zxv/a2lEd0cIi8v/bIYo7zX8h9Ry05dBoy+CoZIkWeDjFqjq4DrhDeDZemsIzsltJTGS25dR3atRPTi9X8DS4XVmr363wqvHHOt5TEoOjhGSdI0FDqIbjxw6ZCswYucR2h5DeZJkgaYsUDcS24ln8p3hMRMtEKN0Hi1oOjXxWbdAMw6uza4Hv5I5AYy+SZIFPrUW2JMnexTCkaLV13RE+dS6zifnwfw24DEwG5KDf3LmLY20pgVWR/9I8Gu3rXL0FMFrTkJS73wLLEkXe8DF4I8ZOuLsycExYJKea4HBDG0fOAv8PLvuMeZ71EmSLNCUBfx4riulH50tC18Bf1M3BDaANcEflfrPH38y5xe9/PW2R53JMAOSJAvUtsB/AeXgatQd+Wk8AAAAAElFTkSuQmCC">
+  </div>
+
+  <div class="progress" aria-hidden="true"><div id="bar"></div></div>
+  <p class="step-label" id="stepLabel"></p>
+
+  <form id="form" class="card" novalidate autocomplete="off">
+    <div class="hp" aria-hidden="true"><input type="text" name="website" id="website" tabindex="-1"></div>
+
+    <!-- 0. Abertura -->
+    <section data-step="0">
+      <h1>Mapeamento de rotinas e IA</h1>
+      <p class="lead">Estamos reorganizando nossos processos e já começamos a estruturar o uso de IA para o grupo. Responda rápido, em poucas palavras. Em breve cada pessoa ou grupo terá um encontro com um dos consultores para aprofundar essas respostas.</p>
+      <p class="hint">São 5 passos curtos. Só nome e empresa são obrigatórios.</p>
+    </section>
+
+    <!-- 1. Quem é você -->
+    <section data-step="1" hidden>
+      <h2>Quem é você</h2>
+      <div class="field">
+        <label class="q" for="nome">Seu nome <span class="req">*</span></label>
+        <input type="text" id="nome" maxlength="120" autocomplete="name">
+        <p class="error" id="err-nome"></p>
+      </div>
+      <div class="field">
+        <span class="q" id="lbl-empresas">Em qual empresa você atua? <span class="req">*</span> <span class="multi">(pode marcar mais de uma resposta)</span></span>
+        <div class="chips" data-name="empresas" data-multi aria-labelledby="lbl-empresas">
+          <button type="button" class="chip" data-value="E-Music">E-Music</button>
+          <button type="button" class="chip" data-value="Folia Formaturas">Folia Formaturas</button>
+          <button type="button" class="chip" data-value="Folia Entretenimento">Folia Entretenimento</button>
+          <button type="button" class="chip" data-value="__todas">Atuo em todas</button>
+        </div>
+        <p class="error" id="err-empresas"></p>
+      </div>
+      <div class="field">
+        <label class="q" for="setor">Setor ou função</label>
+        <input type="text" id="setor" maxlength="160" placeholder="Ex.: financeiro, atendimento, produção">
+      </div>
+    </section>
+
+    <!-- 2. Sua rotina -->
+    <section data-step="2" hidden>
+      <h2>Sua rotina</h2>
+      <div class="field">
+        <label class="q" for="rotina">O que você faz no dia a dia, na semana e no mês?</label>
+        <p class="hint">Em tópicos ou frases curtas.</p>
+        <textarea id="rotina" maxlength="4000" rows="6" placeholder="Dia: …&#10;Semana: …&#10;Mês: …"></textarea>
+      </div>
+    </section>
+
+    <!-- 3. O que consome tempo -->
+    <section data-step="3" hidden>
+      <h2>O que consome tempo</h2>
+      <div class="field">
+        <span class="q" id="lbl-demoram">O que mais toma seu tempo? <span class="multi">(pode marcar mais de uma resposta)</span></span>
+        <div class="chips" data-name="demoram" data-multi aria-labelledby="lbl-demoram">
+          <button type="button" class="chip" data-value="Responder mensagens e e-mails">Responder mensagens e e-mails</button>
+          <button type="button" class="chip" data-value="Planilhas e controles">Planilhas e controles</button>
+          <button type="button" class="chip" data-value="Cobranças, notas e boletos">Cobranças, notas e boletos</button>
+          <button type="button" class="chip" data-value="Atendimento a clientes">Atendimento a clientes</button>
+          <button type="button" class="chip" data-value="Organizar arquivos e Drive">Organizar arquivos e Drive</button>
+          <button type="button" class="chip" data-value="Relatórios">Relatórios</button>
+          <button type="button" class="chip" data-value="Agendas e reuniões">Agendas e reuniões</button>
+          <button type="button" class="chip" data-value="Contratos e documentos">Contratos e documentos</button>
+        </div>
+      </div>
+      <div class="field">
+        <label class="q" for="demoramTxt">Qual tarefa é a mais repetitiva ou dá mais retrabalho?</label>
+        <textarea id="demoramTxt" maxlength="4000"></textarea>
+      </div>
+    </section>
+
+    <!-- 4. Você e a IA -->
+    <section data-step="4" hidden>
+      <h2>Você e a IA</h2>
+      <div class="field">
+        <span class="q" id="lbl-nivel">Quanto você usa IA hoje?</span>
+        <div class="chips" data-name="iaNivel" role="radiogroup" aria-labelledby="lbl-nivel">
+          <button type="button" class="chip" role="radio" data-value="Nunca usei">Nunca usei</button>
+          <button type="button" class="chip" role="radio" data-value="Usei poucas vezes">Usei poucas vezes</button>
+          <button type="button" class="chip" role="radio" data-value="Uso de vez em quando">Uso de vez em quando</button>
+          <button type="button" class="chip" role="radio" data-value="Uso toda semana">Uso toda semana</button>
+          <button type="button" class="chip" role="radio" data-value="Uso todo dia no trabalho">Uso todo dia no trabalho</button>
+        </div>
+      </div>
+      <div class="field">
+        <span class="q" id="lbl-usa">Quais ferramentas você já usou? <span class="multi">(pode marcar mais de uma resposta)</span></span>
+        <div class="chips" data-name="iaUsa" data-multi aria-labelledby="lbl-usa">
+          <button type="button" class="chip" data-value="ChatGPT">ChatGPT</button>
+          <button type="button" class="chip" data-value="Claude">Claude</button>
+          <button type="button" class="chip" data-value="Gemini">Gemini</button>
+          <button type="button" class="chip" data-value="Copilot">Copilot</button>
+          <button type="button" class="chip" data-value="IA do Canva">IA do Canva</button>
+          <button type="button" class="chip" data-value="Outra">Outra</button>
+          <button type="button" class="chip" data-value="Nenhuma" data-exclusive>Nenhuma</button>
+        </div>
+        <div id="box-iaUsaOutra" style="margin-top:10px" hidden>
+          <label class="q" for="iaUsaOutra">Qual outra ferramenta?</label>
+          <input type="text" id="iaUsaOutra" maxlength="160" placeholder="Escreva o nome da ferramenta">
+        </div>
+      </div>
+      <div class="field">
+        <span class="q" id="lbl-para">Para que você usaria? <span class="multi">(pode marcar mais de uma resposta)</span></span>
+        <div class="chips" data-name="iaPara" data-multi aria-labelledby="lbl-para">
+          <button type="button" class="chip" data-value="Escrever e revisar textos">Escrever e revisar textos</button>
+          <button type="button" class="chip" data-value="Responder mensagens e e-mails">Responder mensagens e e-mails</button>
+          <button type="button" class="chip" data-value="Resumir reuniões e documentos">Resumir reuniões e documentos</button>
+          <button type="button" class="chip" data-value="Montar planilhas e relatórios">Montar planilhas e relatórios</button>
+          <button type="button" class="chip" data-value="Criar posts e artes">Criar posts e artes</button>
+          <button type="button" class="chip" data-value="Pesquisar informações">Pesquisar informações</button>
+          <button type="button" class="chip" data-value="Organizar agenda e tarefas">Organizar agenda e tarefas</button>
+          <button type="button" class="chip" data-value="Atender clientes">Atender clientes</button>
+        </div>
+      </div>
+      <div class="field">
+        <label class="q" for="iaAjuda">Onde a IA poderia ajudar mais?</label>
+        <textarea id="iaAjuda" maxlength="4000"></textarea>
+      </div>
+    </section>
+
+    <!-- 5. Organização e necessidades -->
+    <section data-step="5" hidden>
+      <h2>Organização e necessidades</h2>
+      <div class="field">
+        <span class="q" id="lbl-org">Como você se organiza hoje? <span class="multi">(pode marcar mais de uma resposta)</span></span>
+        <div class="chips" data-name="org" data-multi aria-labelledby="lbl-org">
+          <button type="button" class="chip" data-value="Planilhas">Planilhas</button>
+          <button type="button" class="chip" data-value="WhatsApp">WhatsApp</button>
+          <button type="button" class="chip" data-value="Drive">Drive</button>
+          <button type="button" class="chip" data-value="E-mail">E-mail</button>
+          <button type="button" class="chip" data-value="Trello ou app de tarefas">Trello ou app de tarefas</button>
+          <button type="button" class="chip" data-value="Papel e agenda">Papel e agenda</button>
+          <button type="button" class="chip" data-value="De cabeça">De cabeça</button>
+        </div>
+      </div>
+      <div class="field">
+        <label class="q" for="orgTxt">O que funciona e o que atrapalha?</label>
+        <textarea id="orgTxt" maxlength="4000"></textarea>
+      </div>
+      <div class="field">
+        <label class="q" for="necessidades">Do que o seu setor mais precisa?</label>
+        <textarea id="necessidades" maxlength="4000"></textarea>
+      </div>
+      <div class="field">
+        <label class="q" for="extra">Mais alguma coisa? <span class="hint" style="font-weight:400">(opcional)</span></label>
+        <textarea id="extra" maxlength="4000"></textarea>
+      </div>
+    </section>
+
+    <p class="error" id="err-envio" role="alert"></p>
+
+    <div class="nav">
+      <button type="button" class="btn btn-ghost" id="voltar" hidden>Voltar</button>
+      <button type="submit" class="btn btn-primary" id="avancar">Começar</button>
+    </div>
+  </form>
+
+  <div class="card done" id="final" hidden>
+    <div class="check" aria-hidden="true">✓</div>
+    <h2 id="obrigado">Obrigado!</h2>
+    <p class="lead" style="margin:0">Suas respostas foram enviadas. Em breve um dos consultores vai combinar o encontro com você.</p>
+  </div>
+</div>
+
+<script>
+(function () {
+  var TOTAL = 5;
+  var ENDPOINT = 'https://script.google.com/macros/s/AKfycbyxWIGX6Hz-LCfGrPI-rCRy7qeOYGbVu4OnzNlkkxB9iYvAJcrRDouZHFVcZ-MfFBrU/exec';
+  var EMPRESAS = ['E-Music', 'Folia Formaturas', 'Folia Entretenimento'];
+  var RASCUNHO = 'folia-mapeamento-rascunho';
+  var TEXTOS = ['nome', 'setor', 'rotina', 'demoramTxt', 'iaUsaOutra', 'iaAjuda', 'orgTxt', 'necessidades', 'extra'];
+  var passo = 0;
+  var enviando = false;
+
+  var form = document.getElementById('form');
+  var secoes = form.querySelectorAll('section[data-step]');
+  var bar = document.getElementById('bar');
+  var stepLabel = document.getElementById('stepLabel');
+  var btnVoltar = document.getElementById('voltar');
+  var btnAvancar = document.getElementById('avancar');
+  var errEnvio = document.getElementById('err-envio');
+
+  function grupo(nome) { return form.querySelector('.chips[data-name="' + nome + '"]'); }
+  function marcado(chip) { return chip.getAttribute('aria-pressed') === 'true' || chip.getAttribute('aria-checked') === 'true'; }
+  function marcar(chip, sim) {
+    chip.setAttribute(chip.getAttribute('role') === 'radio' ? 'aria-checked' : 'aria-pressed', sim ? 'true' : 'false');
+  }
+  function valores(nome) {
+    var out = [];
+    grupo(nome).querySelectorAll('.chip').forEach(function (c) {
+      if (marcado(c) && c.dataset.value !== '__todas') out.push(c.dataset.value);
+    });
+    return out;
+  }
+
+  // Estado inicial dos chips
+  form.querySelectorAll('.chip').forEach(function (c) { marcar(c, false); });
+
+  // Clique nos chips
+  form.querySelectorAll('.chips').forEach(function (g) {
+    var multi = g.hasAttribute('data-multi');
+    g.addEventListener('click', function (e) {
+      var chip = e.target.closest('.chip');
+      if (!chip) return;
+      var novo = !marcado(chip);
+      if (!multi) {
+        g.querySelectorAll('.chip').forEach(function (c) { marcar(c, false); });
+        marcar(chip, novo);
+      } else if (g.dataset.name === 'empresas') {
+        var chips = g.querySelectorAll('.chip');
+        if (chip.dataset.value === '__todas') {
+          chips.forEach(function (c) { marcar(c, novo); });
+        } else {
+          marcar(chip, novo);
+          var todas = EMPRESAS.every(function (v) { return marcado(g.querySelector('[data-value="' + v + '"]')); });
+          marcar(g.querySelector('[data-value="__todas"]'), todas);
+        }
+        document.getElementById('err-empresas').textContent = '';
+      } else {
+        if (novo && chip.hasAttribute('data-exclusive')) {
+          g.querySelectorAll('.chip').forEach(function (c) { marcar(c, false); });
+        } else if (novo) {
+          var ex = g.querySelector('[data-exclusive]');
+          if (ex) marcar(ex, false);
+        }
+        marcar(chip, novo);
+      }
+      if (g.dataset.name === 'iaUsa') atualizarOutra(chip.dataset.value === 'Outra' && novo);
+      salvarRascunho();
+    });
+  });
+
+  // Mostra o campo "Qual outra ferramenta?" só quando "Outra" está marcada.
+  function atualizarOutra(focar) {
+    var ativa = marcado(grupo('iaUsa').querySelector('[data-value="Outra"]'));
+    var box = document.getElementById('box-iaUsaOutra');
+    box.hidden = !ativa;
+    if (ativa && focar) document.getElementById('iaUsaOutra').focus();
+  }
+
+  document.getElementById('nome').addEventListener('input', function () {
+    document.getElementById('err-nome').textContent = '';
+  });
+  TEXTOS.forEach(function (id) { document.getElementById(id).addEventListener('input', salvarRascunho); });
+
+  function coletar() {
+    var d = { website: document.getElementById('website').value };
+    TEXTOS.forEach(function (id) { d[id] = document.getElementById(id).value.trim(); });
+    d.empresas = valores('empresas');
+    d.demoram = valores('demoram');
+    d.iaNivel = valores('iaNivel')[0] || '';
+    d.iaUsa = valores('iaUsa');
+    if (d.iaUsa.indexOf('Outra') < 0) d.iaUsaOutra = '';
+    d.iaPara = valores('iaPara');
+    d.org = valores('org');
+    return d;
+  }
+
+  function salvarRascunho() {
+    try { localStorage.setItem(RASCUNHO, JSON.stringify(Object.assign(coletar(), { passo: passo }))); } catch (e) {}
+  }
+  function restaurarRascunho() {
+    var d;
+    try { d = JSON.parse(localStorage.getItem(RASCUNHO) || 'null'); } catch (e) { d = null; }
+    if (!d) return;
+    TEXTOS.forEach(function (id) { if (typeof d[id] === 'string') document.getElementById(id).value = d[id]; });
+    ['empresas', 'demoram', 'iaUsa', 'iaPara', 'org'].forEach(function (nome) {
+      (d[nome] || []).forEach(function (v) {
+        var c = grupo(nome).querySelector('[data-value="' + CSS.escape(v) + '"]');
+        if (c) marcar(c, true);
+      });
+    });
+    if (d.empresas && EMPRESAS.every(function (v) { return d.empresas.indexOf(v) >= 0; })) {
+      marcar(grupo('empresas').querySelector('[data-value="__todas"]'), true);
+    }
+    atualizarOutra(false);
+    if (d.iaNivel) {
+      var r = grupo('iaNivel').querySelector('[data-value="' + CSS.escape(d.iaNivel) + '"]');
+      if (r) marcar(r, true);
+    }
+  }
+  function limparRascunho() { try { localStorage.removeItem(RASCUNHO); } catch (e) {} }
+
+  function mostrar(n) {
+    passo = n;
+    secoes.forEach(function (s) { s.hidden = Number(s.dataset.step) !== n; });
+    bar.style.width = (n / TOTAL * 100) + '%';
+    stepLabel.textContent = n === 0 ? '' : 'Passo ' + n + ' de ' + TOTAL;
+    btnVoltar.hidden = n === 0;
+    btnAvancar.textContent = n === 0 ? 'Começar' : (n === TOTAL ? 'Enviar respostas' : 'Continuar');
+    errEnvio.textContent = '';
+    window.scrollTo(0, 0);
+    var foco = secoes[n].querySelector('input[type=text], textarea');
+    if (foco && n > 0 && window.matchMedia('(min-width: 700px)').matches) foco.focus({ preventScroll: true });
+  }
+
+  function validarPasso1() {
+    var ok = true;
+    if (!document.getElementById('nome').value.trim()) {
+      document.getElementById('err-nome').textContent = 'Informe seu nome.';
+      ok = false;
+    }
+    if (!valores('empresas').length) {
+      document.getElementById('err-empresas').textContent = 'Marque ao menos uma empresa.';
+      ok = false;
+    }
+    if (!ok) (document.getElementById('nome').value.trim() ? grupo('empresas').querySelector('.chip') : document.getElementById('nome')).focus();
+    return ok;
+  }
+
+  function enviar() {
+    if (enviando) return;
+    enviando = true;
+    btnAvancar.disabled = true;
+    btnVoltar.disabled = true;
+    btnAvancar.textContent = 'Enviando…';
+    var dados = coletar();
+
+    function sucesso() {
+      limparRascunho();
+      var primeiro = dados.nome.split(/\s+/)[0] || '';
+      document.getElementById('obrigado').textContent = primeiro ? 'Obrigado, ' + primeiro + '!' : 'Obrigado!';
+      form.hidden = true;
+      stepLabel.textContent = '';
+      bar.style.width = '100%';
+      document.getElementById('final').hidden = false;
+      window.scrollTo(0, 0);
+    }
+    function falha(err) {
+      enviando = false;
+      btnAvancar.disabled = false;
+      btnVoltar.disabled = false;
+      btnAvancar.textContent = 'Enviar respostas';
+      var msg = (err && err.message) ? String(err.message).replace(/^Error:\s*/, '') : '';
+      errEnvio.textContent = (msg && msg.length < 120 ? msg + ' ' : '') + 'Não foi possível enviar agora. Suas respostas continuam aqui; tente de novo.';
+    }
+
+    if (window.google && google.script && google.script.run) {
+      google.script.run.withSuccessHandler(sucesso).withFailureHandler(falha).salvarResposta(dados);
+    } else if (/^https?:$/.test(location.protocol)) {
+      // Página hospedada fora do Google: envia direto ao Apps Script, sem login nem cookies.
+      fetch(ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(dados),
+        credentials: 'omit'
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (res) { if (res && res.ok) sucesso(); else falha(new Error((res && res.error) || '')); })
+        .catch(function () { falha(null); });
+    } else {
+      // Pré-visualização fora do Apps Script: simula o envio.
+      console.log('Pré-visualização, dados que seriam enviados:', dados);
+      setTimeout(sucesso, 600);
+    }
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (passo === 1 && !validarPasso1()) return;
+    if (passo < TOTAL) { mostrar(passo + 1); salvarRascunho(); }
+    else enviar();
+  });
+  btnVoltar.addEventListener('click', function () { if (passo > 0) mostrar(passo - 1); });
+  // Enter num campo de texto curto avança; em textarea quebra a linha normalmente.
+
+  restaurarRascunho();
+  mostrar(0);
+})();
+</script>
+</body>
+</html>
